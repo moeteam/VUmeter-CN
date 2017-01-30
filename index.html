@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>VUMETER</title>
+		<meta name="author" content="squee">
+		
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+		<script src="delayed.js"></script>
+		<script src="log.js"></script>
+		<script src="timer.js"></script>
+		
+		<script src="numeric.min.js"></script>
+		<script src="applytransform.js"></script>
+		
+		<script src="defs.js"></script>
+		<script src="wallpaper.js"></script>
+		<script src="led.js"></script>
+		<script src="ledFactory.js"></script>
+		<script src="ledBar.js"></script>
+		<script src="utils.js"></script>
+		<style type="text/css">
+			* {-webkit-transform: translate3d(0, 0, 0); scale3d(1,1,1);}
+			html { width: 100%; height: 100%; }
+			body {	overflow: hidden; width: 100%; height: 100%; padding: 0; margin: 0; background: black; }
+			canvas { position: absolute; top: 0; left: 0;  }
+			#canvas-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+			
+			#bg {
+				position: absolute; 
+				top: 0; left: 0;
+				right: 0; bottom: 0; 
+				overflow: hidden;
+				background: red ; 
+				background-size: cover;
+			}
+			
+			
+			@keyframes animateBorderColor {
+				0% { background-color: hsla( 0, 0%, 100%, 0.66); }
+				50% { background-color: hsla( 0, 0%, 0%, 0.66); }
+				100% { background-color: hsla( 0, 0%, 100%, 0.66);  }
+			}
+			
+		</style> 
+	</head>
+	<body>
+		<div style="isolation: isolate;position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+			<div id="bg"></div>
+			<div id="canvas-wrapper"><canvas id="canvas"></canvas></div>
+		</div>
+		<div id="coordinate-wrapper" style="position: absolute; top: 0; left: 0; right: 0;">
+			<div id="coordinates" style="width: 500px; margin: 0 auto; color: white; background: rgba( 128, 128, 128, 0.5 );">
+				<table width="100%">
+					<tr>
+						<td width="50%" align="center" id="sc">
+							<b>屏幕坐标</b>
+							<hr>
+							<table style="font-family: monospace; white-space: pre; font-size: 16px; background: rgba( 128, 128, 128, 0.5 );">
+								<tr>
+									<td align="left" valign="middle" id="sc_tl">Top Left<br>x: -960<br>y: -540</td>
+									<td align="center" valign="middle">      </td>
+									<td align="left" valign="middle" id="sc_tr">Top Right<br>x: 960<br>y: -540</td>
+								</tr>
+								<tr>
+									<td align="center" valign="middle"> <br> </td>
+									<td align="center" valign="middle"></td>
+									<td align="center" valign="middle"> <br> </td>
+								</tr>
+								<tr>
+									<td align="left" valign="middle" id="sc_bl">x: -960<br>y: 540</td>
+									<td align="center" valign="middle">      </td>
+									<td align="left" valign="middle" id="sc_br">x: 960<br>y: 540</td>
+								</tr>
+							</table>
+						</td>
+						<td width="50%" align="center" id="bc">
+							<b>背景图片坐标</b>
+							<hr>
+							<table style="font-family: monospace; white-space: pre; font-size: 16px; background: rgba( 128, 128, 128, 0.5 );">
+								<tr>
+									<td align="left" valign="middle" id="bc_tl">Top Left<br>x: -960<br>y: -540</td>
+									<td align="center" valign="middle">      </td>
+									<td align="left" valign="middle" id="bc_tr">Top Right<br>x: 960<br>y: -540</td>
+								</tr>
+								<tr>
+									<td align="center" valign="middle"> <br> </td>
+									<td align="center" valign="middle"></td>
+									<td align="center" valign="middle"> <br> </td>
+								</tr>
+								<tr>
+									<td align="left" valign="middle" id="bc_bl">x: -960<br>y: 540</td>
+									<td align="center" valign="middle">      </td>
+									<td align="left" valign="middle" id="bc_br">x: 960<br>y: 540</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+				<p id="c_using" align="center" style="color: #080; text-align: center; font-weight: bold; font-family: sans-serif; font-size: 16px; background: rgba( 0, 0, 0, 0.75 ); padding: 10px 0;">
+					Currently Using Screen Coordinates
+				</p>
+			</div>
+		</div>
+		<div id="crosshair" style="width: 9px; height: 9px; position: absolute;">
+			<div style="position: absolute; top: 0; left: 0; width: 3px; height: 3px; border-right: 1px solid white; border-bottom: 1px solid white;">
+				
+			</div>
+			<div style="position: absolute; top: 0; right: 0; width: 3px; height: 3px; border-left: 1px solid black; border-bottom: 1px solid black;">
+				
+			</div>
+			<div style="position: absolute; bottom: 0; left: 0; width: 3px; height: 3px; border-right: 1px solid black; border-top: 1px solid black;">
+				
+			</div>
+			<div style="position: absolute; bottom: 0; right: 0; width: 3px; height: 3px; border-left: 1px solid white; border-top: 1px solid white;">
+				
+			</div>
+			<div style="position: absolute; top: 9px; left: 9px; background: rgba( 128, 128, 128, 0.5 ); color: white; padding: 5px;">
+				0,&nbsp;0
+			</div>
+		</div>
+		
+		<script type="text/javascript">
+			
+			function myWallpaper() {
+				var self = this;
+				this.width = 0;
+				this.height = 0;
+				this.cx = 0;
+				this.cy = 0;
+				this.coordinateWrapper = document.getElementById( 'coordinate-wrapper' );
+				this.canvasWrapper = document.getElementById( 'canvas-wrapper' );
+				this.indicator = document.getElementById( 'indicator' );
+				this.crosshair = document.getElementById( 'crosshair' );
+				this.bg = document.getElementById( 'bg' );	
+				this.bgScale = new backgroundScale( this.bg );
+				
+				
+				this.scTl = document.getElementById( 'sc_tl' );				
+				this.scTr = document.getElementById( 'sc_tr' );				
+				this.scBl = document.getElementById( 'sc_bl' );				
+				this.scBr = document.getElementById( 'sc_br' );	
+				this.bcTl = document.getElementById( 'bc_tl' );				
+				this.bcTr = document.getElementById( 'bc_tr' );				
+				this.bcBl = document.getElementById( 'bc_bl' );				
+				this.bcBr = document.getElementById( 'bc_br' );	
+				this.scCol = document.getElementById( 'sc' );		
+				this.bcCol = document.getElementById( 'bc' );		
+				this.cLabel = document.getElementById( 'c_using' );		
+				
+				this.indicatorHideDelay = new delayed(function(){ self.hideIndicator(); }, 5000);
+				this.hideIndicator();
+				
+				this.prevLedStartColor = '0 0 0';
+				this.prevLedEndColor = '1 1 1';
+				
+				this.prevLedStartColor2 = '0 0 0';
+				this.prevLedEndColor2 = '1 1 1';
+				
+				this.backgroundColorCount = 3;
+				this.backgroundSize = 'cover';
+				this.backgroundColor1 = 'black';
+				this.backgroundColor2 = 'black';
+				this.backgroundColor3 = 'black';
+				this.backgroundHorizontal = false;
+				
+				this.useBackgroundImage = false;
+				this.backgroundImage = null;
+				
+				this.bars = [];
+				this.barSets = 1;
+				this.barGrouping = 1;
+				this.barCount = 128;
+				this.barMargin = 2;
+				
+				this.marginLeft = 100;
+				this.marginRight = 1000;
+				this.marginTop = 100;
+				this.marginBottom = 100;
+				
+				this.barsWanted = 64 / 32;  
+				
+				this.reverseAudioData = false;
+				this.disableNormalizing = false;
+				this.adjustAmplitude = 1;
+				this.smoothingFactor = 0;
+				this.hideWhenSilent = false;
+				
+				
+				this.ledType = 1;
+				this.use4Colors = false;
+				
+				this.orientation = ORIENT_BOTTOM;
+				
+				this.gotInitialProperties = false;
+				
+				this.barOpts = {
+					hueStart : 120,
+					hueEnd : 0,
+					saturationStart : 1,
+					saturationEnd : 1,
+					lightnessStart: 0.5,
+					lightnessEnd: 0.5,
+					opacityLed : 0.5,
+					
+					hueStart2 : 120,
+					hueEnd2 : 0,
+					saturationStart2 : 1,
+					saturationEnd2 : 1,
+					lightnessStart2: 0.5,
+					lightnessEnd2: 0.5,
+					
+					opacityPeak : 1,
+					dropRate: 250,
+					orientation: this.orientation,
+					backgroundColor:'black'
+				};
+				
+				this.ledTypeSpacing = 1.5;
+				/*
+					this.ledSizeFactor = [
+										1,
+										1,
+										1,
+										1,
+										1
+									  ];
+				*/				  
+				
+				this.maxAverage = 1;
+				this.maxAverageHistory = [];
+				
+				this.audioData = [];
+				this.prevAudioData = [];
+				this.audioDataCount = 0;
+				
+				this.usePositionSystem = 0;
+				this.topLeftX = 0;
+				this.topLeftY = 0;
+				this.topRightX = 0;
+				this.topRightY = 0;
+				this.bottomLeftX = 0;
+				this.bottomLeftY = 0;
+				this.bottomRightX = 0;
+				this.bottomRightY = 0;
+				this.topLeftX2 = 0;
+				this.topLeftY2 = 0;
+				this.topRightX2 = 0;
+				this.topRightY2 = 0;
+				this.bottomLeftX2 = 0;
+				this.bottomLeftY2 = 0;
+				this.bottomRightX2 = 0;
+				this.bottomRightY2 = 0;
+				this.useStroke = true;
+				
+				this.resizeTimeout = null;
+				
+				this.colorRotation = true;
+				this.colorRotationSpeed = 0.01;
+				this.colorRotationStep = 2;
+				this.colorRotationLastStep = 0;
+				this.colorRotationHue = 0;
+			};			
+			
+			myWallpaper.prototype = {
+				/**
+				 * init wallpaper
+				 **/
+				init: function( wp ) {
+					//console.log( 'init', wp.width, wp.height, wp );
+					var ctx = wp.context;
+					
+					this.audioData = [];
+					this.prevAudioData = [];
+					this.resetAudioData();
+					this.resetAudioData(); // do twice to be sure prevAudioData is setup too
+					
+					this.resize( wp ); // resize (re)inits all rendering stuff
+				},
+				
+				showIndicator: function( x, y )
+				{
+					//this.indicator.style.display = '';
+					//this.indicator.style.left = x - 15;
+					//this.indicator.style.top = y - 15;
+					if( !this.gotInitialProperties ) {
+						return;
+					}
+					this.canvasWrapper.style.animation = 'animateBorderColor 2s infinite steps(10)';
+					this.indicatorHideDelay.trigger();
+					if( this.usePositionSystem == 1 ) {
+						this.crosshair.style.display = 'block';
+						this.crosshair.style.top = (this.cy-3) + 'px';
+						this.crosshair.style.left = (this.cx-3) + 'px';
+						this.coordinateWrapper.style.display = 'block';
+					}
+				},
+				hideIndicator: function()
+				{
+					this.canvasWrapper.style.animation = 'none';
+					this.coordinateWrapper.style.display = 'none';
+					this.crosshair.style.display = 'none';
+					//this.indicator.style.display = 'none';
+				},
+				
+				/**
+				 * render frame 
+				 **/
+				render: function( wp, timeDiff, frameNr )
+				{
+					if( this.audioDataCount === 0 ) {
+						return;
+					}
+					
+					this.averageAudioData();
+					var ctx = wp.context;
+					
+					ctx.lineWidth = 0;
+					//ctx.fillStyle = '#202020';
+					//ctx.fillRect(0, 0, wp.width, wp.height);	
+					
+					var audioData = this.audioData.slice(0);
+					
+					
+					if( this.reverseAudioData ) {
+						var tmp = 0;
+						for( var i = 0; i < 32; i++ ) {
+							tmp = audioData[ i ];
+							audioData[i] = audioData[63-i];
+							audioData[63-i] = tmp;
+							
+							var tmp = audioData[ i+64 ];
+							audioData[i+64] = audioData[63-i+64];
+							audioData[63-i+64] = tmp;	
+						}						
+					}
+					if( this.smoothingFactor > 0 ) {
+						var total = 0;
+						var cnt = 0;
+						var smoothFactor = 4-this.smoothingFactor;
+						var ad = [];
+						for( var i = 0; i < 64; i++ ) {
+							
+							total = audioData[ i ]*smoothFactor; cnt = smoothFactor;
+							if( i > 0 ) total += audioData[ i-1 ]; cnt += 1;
+							if( i < 63 ) total += audioData[ i+1 ]; cnt += 1;
+							ad[i] = total / cnt;
+							
+							total = audioData[ i+64 ]*smoothFactor; cnt = smoothFactor;
+							if( i > 0 ) total += audioData[ i+64-1 ]; cnt += 1;
+							if( i < 63 ) total += audioData[ i+64+1 ]; cnt += 1;
+							ad[i+64] = total / cnt;
+						}	
+						
+						audioData = ad;
+					}
+					this.resetAudioData();
+					
+					//var userSettings = wp.userSettings;
+					//var generalSettings = wp.generalSettings;
+					
+					//var barWidth = ( this.width - 1 * this.barMargin ) / this.barCount-this.barMargin;
+					//var barHeight = this.height - 2 * this.barMargin;
+					
+					var updateHue = false;
+					if( this.colorRotation ) {
+						this.colorRotationHue += timeDiff / 5 / ( 1 / this.colorRotationSpeed );
+						while( this.colorRotationHue > this.colorRotationLastStep + this.colorRotationStep ) {
+							this.colorRotationLastStep += this.colorRotationStep;
+							updateHue = true;
+						}
+					}
+				
+					timer.start( 'render' );
+					var maxValue = 0;
+					for( var i = 0; i < this.barCount && i < audioData.length; i++ ) {
+						var v1 = 0;
+						var v2 = 0;
+						for( var j = 0; j < this.barGrouping; j++ ) {
+							v1 += audioData[i*this.barGrouping+j];
+							v2 += audioData[64 + i*this.barGrouping+j];
+						}
+						
+						v1 /= this.barGrouping;
+						v2 /= this.barGrouping;
+						if( v1 > maxValue ) maxValue = v1;
+						if( v2 > maxValue ) maxValue = v2;
+						
+						var normalizationFactor = this.disableNormalizing ? 1 * 1/this.adjustAmplitude  : this.maxAverage * 1/this.adjustAmplitude * 1.5;
+						for( var k = 0; k < this.barSets; k ++ ) {
+							if( updateHue ) {
+								this.bars[ k * this.barCount * 2 + i ].updateHue( this.colorRotationLastStep );
+								this.bars[ k * this.barCount * 2 + i + this.barCount ].updateHue( this.colorRotationLastStep );
+								//this.bars[ k * this.barCount * 2 + i ].value = v1 / normalizationFactor;
+								//this.bars[ k * this.barCount * 2 + i + this.barCount ].value = v2 / normalizationFactor;
+								this.bars[ k * this.barCount * 2 + i ].refresh( ctx, this.useStroke );
+								this.bars[ k * this.barCount * 2 + i + this.barCount ].refresh( ctx, this.useStroke );
+							}
+							//this.bars[ k * this.barCount * 2 + i ].value = v1 / normalizationFactor;
+							//this.bars[ k * this.barCount * 2 + i + this.barCount ].value = v2 / normalizationFactor;
+							//this.bars[ k * this.barCount * 2 + i ].refresh( ctx, this.useStroke );
+							//this.bars[ k * this.barCount * 2 + i + this.barCount ].refresh( ctx, this.useStroke );
+							this.bars[ k * this.barCount * 2 + i ].update( ctx, this.useStroke, timeDiff, v1 / normalizationFactor );
+							this.bars[ k * this.barCount * 2 + i + this.barCount ].update( ctx, this.useStroke, timeDiff, v2 / normalizationFactor );
+						}
+					}
+					timer.stop( 'render' );
+					//
+					//this.maxAverageHistory.push( maxValue );
+					//if( this.maxAverageHistory.length > 600 ) this.maxAverageHistory.shift();
+					//this.maxAverage = this.maxAverageHistory.length == 0 ? 1 : this.maxAverageHistory.reduce(function(a, b) { return a + b; })/ this.maxAverageHistory.length;
+					
+					this.maxAverageHistory.push( maxValue );
+					while( this.maxAverageHistory.length > 10 * wp.settings.targetFrameRate ) this.maxAverageHistory.shift();
+					
+					var avgSet = this.maxAverageHistory.slice(0);
+					
+					if( avgSet.length > 10 ) {
+						avgSet.sort();
+						var low = Math.floor(avgSet.length * 0.2 );
+						var high = Math.ceil( avgSet.length * 0.8 );
+						avgSet = avgSet.splice( low, high-low );
+						
+					}
+					this.maxAverage = avgSet.length === 0 
+										? 1 
+										:  avgSet.reduce(function(a, b) { return a + b; }) / avgSet.length;
+				
+					if( this.hideWhenSilent ) {
+						if( this.maxAverage < 0.0000000001) {
+							wp.canvas.style.display = 'none';
+						}
+						else {
+							wp.canvas.style.display = '';
+						}
+					}
+					this.maxAverage = Math.max( 0.01, this.maxAverage );
+					
+					//this.maxAverage = this.maxAverage * 0.5 + maxValue * 0.5;
+					//if( this.maxAverage < 0.1 ) this.maxAverage = 0.1;
+				},
+				writeCoordinate: function(x,y)
+				{
+					x = 'x: ' + (( x < 0 ) ? x : ' ' + x);
+					y = 'y: ' +(( y < 0 ) ? y : ' ' + y);
+					return x + '<br>' + y;
+				},
+				setTransform: function()
+				{
+					if( this.usePositionSystem == 0 ) {
+						var originalPos = [
+							[0,0],
+							[this.width,0],
+							[this.width,this.height],
+							[0,this.height]
+						];			
+						var targetPos = [
+							[
+								0 + this.topLeftX/100 * this.width,				
+								0 + this.topLeftY/100 * this.height
+							],
+							[
+								this.width - this.topRightX/100 * this.width,		
+								0 + this.topRightY/100 * this.height
+							],
+							[
+								this.width - this.bottomRightX/100 * this.width,	
+								this.height - this.bottomRightY/100 * this.height
+							],
+							[
+								0 + this.bottomLeftX/100 * this.width,				
+								this.height - this.bottomLeftY/100 * this.height
+							]
+						];
+						applyTransform( this.canvasWrapper, originalPos, targetPos, function(){} );
+					}
+					else if( this.usePositionSystem == 1 ) {
+						var originalPos = [
+							[0,0],
+							[this.width,0],
+							[this.width,this.height],
+							[0,this.height]
+						];		
+						var self = this;
+						this.bgScale.getSize( function(res)
+						{	
+							var targetPos = [
+								[
+									self.bgScale.scale * self.topLeftX2 + self.width/2,				
+									self.bgScale.scale * self.topLeftY2 + self.height/2
+								],
+								[
+									self.bgScale.scale * self.topRightX2 + self.width/2,				
+									self.bgScale.scale * self.topRightY2 + self.height/2
+								],
+								[
+									self.bgScale.scale * self.bottomRightX2 + self.width/2,				
+									self.bgScale.scale * self.bottomRightY2 + self.height/2
+								],
+								[
+									self.bgScale.scale * self.bottomLeftX2 + self.width/2,				
+									self.bgScale.scale * self.bottomLeftY2 + self.height/2
+								]
+							];
+						//
+							if( self.bgScale.hasImage ) {
+								self.scCol.style.color = 'white';	
+								self.bcCol.style.color = '#8F8'; 
+								self.cLabel.innerHTML = '当前使用的背景图片坐标<br>屏幕坐标已进行匹配缩放';
+								self.scTl.innerHTML = self.writeCoordinate( 1/self.bgScale.scale * self.bgScale.screenWidth/-2, 1/self.bgScale.scale * self.bgScale.screenHeight/-2 );
+								self.scTr.innerHTML = self.writeCoordinate( 1/self.bgScale.scale * self.bgScale.screenWidth/2, 1/self.bgScale.scale * self.bgScale.screenHeight/-2 );
+								self.scBl.innerHTML = self.writeCoordinate( 1/self.bgScale.scale * self.bgScale.screenWidth/-2, 1/self.bgScale.scale * self.bgScale.screenHeight/2 );
+								self.scBr.innerHTML = self.writeCoordinate( 1/self.bgScale.scale * self.bgScale.screenWidth/2, 1/self.bgScale.scale * self.bgScale.screenHeight/2 );
+								self.bcTl.innerHTML = self.writeCoordinate( self.bgScale.width/-2, self.bgScale.height/-2 );
+								self.bcTr.innerHTML = self.writeCoordinate( self.bgScale.width/2, self.bgScale.height/-2 );
+								self.bcBl.innerHTML = self.writeCoordinate( self.bgScale.width/-2, self.bgScale.height/2 );
+								self.bcBr.innerHTML = self.writeCoordinate( self.bgScale.width/2, self.bgScale.height/2 );
+							}
+							else {
+								self.scCol.style.color = '#8F8';	
+								self.bcCol.style.color = 'white';
+								self.cLabel.innerHTML = '当前使用的屏幕坐标';
+								self.scTl.innerHTML = self.writeCoordinate( self.bgScale.screenWidth/-2, self.bgScale.screenHeight/-2 );
+								self.scTr.innerHTML = self.writeCoordinate( self.bgScale.screenWidth/2, self.bgScale.screenHeight/-2 );
+								self.scBl.innerHTML = self.writeCoordinate( self.bgScale.screenWidth/-2, self.bgScale.screenHeight/2 );
+								self.scBr.innerHTML = self.writeCoordinate( self.bgScale.screenWidth/2, self.bgScale.screenHeight/2 );
+								self.bcTl.innerHTML = self.writeCoordinate( '', '' );
+								self.bcTr.innerHTML = self.writeCoordinate( '', '' );
+								self.bcBl.innerHTML = self.writeCoordinate( '', '' );
+								self.bcBr.innerHTML = self.writeCoordinate( '', '' );
+							}
+						
+							applyTransform( self.canvasWrapper, originalPos, targetPos, function(){} );
+						});
+					}
+						
+				},
+				/**
+				 * render area resized.. re-init everything that needs it
+				 **/
+				resize: function( wp ) 
+				{
+					var ctx = wp.context;
+					
+					this.width = wp.width;
+					this.height = wp.height;
+					
+					this.setTransform();
+					
+					this.cx = this.width/2;
+					this.cy = this.height/2;
+					
+					ctx.globalCompositeOperation = 'source-out';
+					ctx.fillStyle = 'rgba(0,0,0,0)';
+					ctx.fillRect(0, 0, wp.width, wp.height);	
+					ctx.globalCompositeOperation = 'source-over';
+					
+					//var barCount = ; 
+					
+					var areaWidth = this.width - this.marginLeft - this.marginRight;
+					var areaHeight = this.height - this.marginTop - this.marginBottom;
+					
+					if( areaWidth < 2 ) areaWidth = 2;
+					if( areaHeight < 2 ) areaHeight = 2;
+					
+					var ledSizeRatio = this.ledTypeSpacing;//[ this.ledType ];
+					//var ledSizeFactor = this.ledSizeFactor[ this.ledType ];
+					if( this.orientation === ORIENT_BOTTOM || this.orientation === ORIENT_TOP ) {
+						this.barSets = 1;
+						
+						var barFactor = this.barsWanted;// 
+						barFactor = Math.pow(2, Math.ceil(Math.log(barFactor)/Math.log(2)));; // round to closest power of 2
+						barFactor = Math.max( 1, Math.min( 8, barFactor ) );
+						//if( barFactor < 1 ) { barFactor = 1; }
+						//if( barFactor > 8 ) {barFactor = 8;}
+						this.barGrouping = barFactor;
+						this.barCount = 64 / barFactor;
+
+						
+						var barWidth = ( areaWidth - 1 * this.barMargin ) / (this.barCount*2)-this.barMargin;
+						var barHeight = areaHeight - 2 * this.barMargin;
+						
+						var leds = barHeight / ( barWidth / ledSizeRatio );
+						for( var i = 0; i < this.barCount*2; i++ ) {
+							this.bars[i] = new ledBar(	this.ledType, // 0=block/1=circle
+														i < this.barCount ? 0 : 1,
+														Math.ceil(leds), 
+														this.marginLeft + (i < this.barCount ? areaWidth/2 - ( ( barWidth + this.barMargin ) * (i+1) ) : this.barMargin + ( barWidth + this.barMargin ) * i), 
+														this.marginTop + ( areaHeight - barHeight ) / 2, 
+														barWidth, 
+														barHeight 
+														);
+							this.bars[i].setOpts(this.barOpts, !this.use4Colors
+																? 0
+																: ( i< this.barCount 
+																	? ( (i) / (this.barCount-1)) 
+																	: ( (i-this.barCount) / (this.barCount-1))
+																	)
+																	);
+							this.bars[i].value = 0;
+							this.bars[i].valueHigh = 1;
+							this.bars[i].refresh(ctx, this.useStroke);
+						}
+					}					
+					else if( this.orientation === ORIENT_MID ) {
+						this.barSets = 2;
+						var barOpts2 = JSON.parse(JSON.stringify(this.barOpts));
+						barOpts2.orientation = ORIENT_TOP;
+						var barFactor = this.barsWanted;//
+						barFactor = Math.pow(2, Math.ceil(Math.log(barFactor)/Math.log(2)));; // round to closest power of 2
+						barFactor = Math.max( 1, Math.min( 8, barFactor ) );
+						//if( barFactor < 1 ) { barFactor = 1; }
+						//if( barFactor > 8 ) {barFactor = 8;}
+						this.barGrouping = barFactor;
+						this.barCount = 64 / barFactor;
+
+						var barWidth = ( areaWidth - 1 * this.barMargin ) / (this.barCount*2)-this.barMargin;
+						var barHeight = ( areaHeight - 2 * this.barMargin ) / 2;
+						
+						var leds = barHeight / ( barWidth / ledSizeRatio );
+						var total = this.barCount*2;
+						for( var i = 0; i < total; i++ ) {
+							this.bars[i] = new ledBar(	this.ledType, // 0=block/1=circle
+														i < this.barCount ? 0 : 1,
+														Math.ceil(leds), 
+														this.marginLeft + (i < this.barCount ? areaWidth/2 - ( ( barWidth + this.barMargin ) * (i+1) ) : this.barMargin + ( barWidth + this.barMargin ) * i), 
+														this.marginTop + ( areaHeight/2) , 
+														barWidth, 
+														barHeight 
+														);
+							this.bars[i].setOpts(barOpts2, !this.use4Colors
+																? 0
+																: ( i< this.barCount 
+																	? ( (i) / (this.barCount-1)) 
+																	: ( (i-this.barCount) / (this.barCount-1))
+																	 )
+																	);
+							this.bars[i].value = 0;
+							this.bars[i].valueHigh = 1;
+							this.bars[i].refresh(ctx, this.useStroke);
+						}
+						for( var i = 0; i < total; i++ ) {
+							this.bars[i+total] = new ledBar(	this.ledType, // 0=block/1=circle
+																i < this.barCount ? 0 : 1,
+																Math.ceil(leds), 
+																this.marginLeft + (i < this.barCount ? areaWidth/2 - ( ( barWidth + this.barMargin ) * (i+1) ) : this.barMargin + ( barWidth + this.barMargin ) * i), 
+																this.marginTop + 0,//( this.height/2 - barHeight ) / 2, 
+																barWidth, 
+																barHeight 
+																);
+							this.bars[i+total].setOpts(this.barOpts, !this.use4Colors
+																		? 0
+																		: ( i< this.barCount 
+																			? ( (i) / (this.barCount-1)) 
+																			: ( (i-this.barCount) / (this.barCount-1))
+																			)
+																			);
+							this.bars[i+total].value = 0;
+							this.bars[i+total].valueHigh = 1;
+							this.bars[i+total].refresh(ctx, this.useStroke);
+						}
+					}				
+					else if( this.orientation === ORIENT_MID2 ) {
+						this.barSets = 2;
+						var barOpts2 = JSON.parse(JSON.stringify(this.barOpts));
+						barOpts2.orientation = ORIENT_TOP;
+						var barFactor = this.barsWanted;//
+						barFactor = Math.pow(2, Math.ceil(Math.log(barFactor)/Math.log(2)));; // round to closest power of 2
+						barFactor = Math.max( 1, Math.min( 8, barFactor ) );
+						//if( barFactor < 1 ) { barFactor = 1; }
+						//if( barFactor > 8 ) {barFactor = 8;}
+						this.barGrouping = barFactor;
+						this.barCount = 64 / barFactor;
+
+						var barWidth = ( areaWidth - 1 * this.barMargin ) / (this.barCount*2)-this.barMargin;
+						var barHeight = ( areaHeight - 2 * this.barMargin ) / 2;
+						
+						var leds = barHeight / ( barWidth / ledSizeRatio );
+						var total = this.barCount*2;
+						for( var i = 0; i < total; i++ ) {
+								this.bars[i] = new ledBar(	this.ledType, // 0=block/1=circle
+															i < this.barCount ? 0 : 1,
+															Math.ceil(leds), 
+															this.marginLeft + (i < this.barCount ? areaWidth/2 - ( ( barWidth + this.barMargin ) * (i+1) ) : this.barMargin + ( barWidth + this.barMargin ) * i), 
+															this.marginTop + 0,//( this.height/2 - barHeight ) / 2, 
+															barWidth, 
+															barHeight 
+															);
+							this.bars[i].setOpts(barOpts2, !this.use4Colors
+																? 0
+																: ( i< this.barCount 
+																	? ( (i) / (this.barCount-1)) 
+																	: ( (i-this.barCount) / (this.barCount-1))
+																	 )
+																	);
+							this.bars[i].value = 0;
+							this.bars[i].valueHigh = 1;
+							this.bars[i].refresh(ctx, this.useStroke);
+						}
+						for( var i = 0; i < total; i++ ) {
+							this.bars[i+total] = new ledBar(	this.ledType, // 0=block/1=circle
+																i < this.barCount ? 0 : 1,
+																Math.ceil(leds), 
+																this.marginLeft + (i < this.barCount ? areaWidth/2 - ( ( barWidth + this.barMargin ) * (i+1) ) : this.barMargin + ( barWidth + this.barMargin ) * i), 
+																this.marginTop + ( areaHeight/2) , 
+																barWidth, 
+																barHeight 
+																);
+							this.bars[i+total].setOpts(this.barOpts, !this.use4Colors
+																		? 0
+																		: ( i< this.barCount 
+																			? ( (i) / (this.barCount-1)) 
+																			: ( (i-this.barCount) / (this.barCount-1))
+																			)
+																			);
+							this.bars[i+total].value = 0;
+							this.bars[i+total].valueHigh = 1;
+							this.bars[i+total].refresh(ctx, this.useStroke);
+						}
+					}					
+					else if( this.orientation === ORIENT_LEFT || this.orientation === ORIENT_RIGHT ) {
+						this.barSets = 1;
+						var barFactor = this.barsWanted;// /
+						barFactor = Math.pow(2, Math.ceil(Math.log(barFactor)/Math.log(2)));; // round to closest power of 2
+						barFactor = Math.max( 1, Math.min( 8, barFactor ) );
+						//if( barFactor < 1 ) { barFactor = 1; }
+						//if( barFactor > 8 ) {barFactor = 8;}
+						this.barGrouping = barFactor;
+						this.barCount = 64 / barFactor;
+
+						var barHeight = ( areaHeight - 1 * this.barMargin ) / (this.barCount)-this.barMargin;
+						var barWidth = ( areaWidth/2 ) - 2 * this.barMargin;
+						
+						var leds = barWidth / ( barHeight / ledSizeRatio );
+						for( var i = 0; i < this.barCount*2; i++ ) {
+							this.bars[i] = new ledBar(	this.ledType, // 0=block/1=circle
+														i < this.barCount ? 0 : 1, // left or right
+														Math.ceil(leds), 
+														this.marginLeft + (i < this.barCount ? ( areaWidth/2 - barWidth ) / 2 : areaWidth/2 + ( areaWidth/2 - barWidth ) / 2), 
+														this.marginTop + (areaHeight - barHeight - this.barMargin - (this.barMargin + ( barHeight + this.barMargin ) *( i % this.barCount ))), 
+														barWidth, 
+														barHeight 
+														);
+							this.bars[i].setOpts(this.barOpts, !this.use4Colors
+																? 0
+																: ( i < this.barCount 
+																		? ((i) / (this.barCount-1)) 
+																		: ((i-this.barCount) / (this.barCount-1))
+																		) );
+							this.bars[i].value =0;
+							this.bars[i].valueHigh = 1;
+							this.bars[i].refresh(ctx, this.useStroke);
+						}
+					}
+				},
+				
+				resetAudioData: function()
+				{
+					if( this.audioDataCount > 0 ) {
+						for( var i = 0; i < 128; i++ ) {
+							this.prevAudioData[i] =  this.audioData[i];
+						}
+					}
+					else {
+						for( var i = 0; i < 128; i++ ) {
+							this.prevAudioData[i] = 0;
+						}
+					}
+					this.audioData = [];
+					for( var i = 0; i < 128; i++ ) {
+						this.audioData[i] =  this.prevAudioData.length > 0 ? this.prevAudioData[i] * 0.33 : 0;//this.prevAudioData[i];
+					}
+					this.audioDataCount = this.prevAudioData.length > 0 ? 0.33 : 0;
+				},
+				averageAudioData: function()
+				{
+					if( this.audioDataCount > 0 ) {
+						for( var i = 0; i < 128; i++ ) {
+							this.audioData[i] = this.audioData[i]  / this.audioDataCount;
+						}
+					}
+					else {
+						this.audioData = [];
+						for( var i = 0; i < 128; i++ ) {
+							this.audioData[i] = this.prevAudioData[i];
+						}
+					}
+				},
+				updateAudioData: function( wp, data )
+				{
+					for( var i = 0; i < data.length && i < 128; i++ ) {
+						this.audioData[i] += data[i];
+					}
+					this.audioDataCount++;
+				},
+				applyGeneralProperties: function(wp, properties)
+				{
+					//for( var i in properties ) {
+						//console.error( i + " : " + properties[i]);
+					//}
+					this.audioDataCount = 0;
+					this.audioData = [];
+					this.prevAudioData = [];
+					this.resetAudioData();
+					this.resetAudioData(); // do twice to be sure prevAudioData is setup too
+				},
+				triggerResize: function(wp)
+				{
+					if( this.resizeTimeout ) {
+						clearTimeout( this.resizeTimeout );
+						this.resizeTimeout = null;
+					}
+					
+					var self = this;
+					var w = wp;
+					var func = function() {
+						self.resize(wp);
+					};
+					this.resizeTimeout = setTimeout( func, 100 );
+				},
+				applyUserProperties: function( wp, properties )
+				{
+					this.audioDataCount = 0;
+					this.audioData = [];
+					this.prevAudioData = [];
+					this.resetAudioData();
+					this.resetAudioData(); // do twice to be sure prevAudioData is setup too
+					
+					if( !properties.led2_endColor ) {properties.led2_endColor = this.prevLedEndColor;}
+					if( !properties.led1_startColor ) {properties.led1_startColor = this.prevLedStartColor;}
+					
+					if( !properties.led4_endColor ) {properties.led4_endColor = this.prevLedEndColor2;}
+					if( !properties.led3_startColor ) {properties.led3_startColor = this.prevLedStartColor2;}
+					
+			        var ctx = wp.context;
+					if( properties.led_use4Colors ) {
+						this.use4Colors = properties.led_use4Colors.value ? true : false;
+					}
+					if( properties.led1_startColor ) {
+						this.prevLedStartColor = properties.led1_startColor;
+						var c = properties.led1_startColor.value.split(' ');
+						var hsl = rgbToHsv( c[0],c[1],c[2],1 );
+						this.barOpts.hueStart = hsl[0]*360;
+						this.barOpts.saturationStart = hsl[1];
+						this.barOpts.lightnessStart = hsl[2];
+						if( hsl[1] == 0 || hsl[2] == 0 ) {
+							if( properties.led2_endColor ) {
+								var c = properties.led2_endColor.value.split(' ');
+								var hsl = rgbToHsv( c[0],c[1],c[2],1);
+								this.barOpts.hueStart = hsl[0]*360;
+							}
+							else {
+								this.barOpts.hueStart = this.barOpts.hueEnd;
+							}
+						}
+						if( this.barOpts.saturationEnd == 0 || this.barOpts.lightnessEnd == 0  ) {
+							this.barOpts.hueEnd = this.barOpts.hueStart;
+						}
+						//log.append( this.barOpts );
+					}
+					if( properties.led2_endColor ) {
+						this.prevLedEndColor = properties.led2_endColor;
+						var c = properties.led2_endColor.value.split(' ');
+						var hsl = rgbToHsv( c[0],c[1],c[2],1);
+						this.barOpts.hueEnd = hsl[0]*360;
+						this.barOpts.saturationEnd = hsl[1];
+						this.barOpts.lightnessEnd = hsl[2];
+						if( hsl[1] == 0 || hsl[2] == 0  ) {
+							this.barOpts.hueEnd = this.barOpts.hueStart;
+						}
+						if( this.barOpts.saturationStart == 0 || this.barOpts.lightnessStart == 0  ) {
+							this.barOpts.hueStart = this.barOpts.hueEnd;
+						}
+						//log.append( this.barOpts );
+					}
+					
+					if( properties.led3_startColor ) {
+						this.prevLedStartColor2 = properties.led3_startColor;
+						var c = properties.led3_startColor.value.split(' ');
+						var hsl = rgbToHsv( c[0],c[1],c[2],1 );
+						this.barOpts.hueStart2 = hsl[0]*360;
+						this.barOpts.saturationStart2 = hsl[1];
+						this.barOpts.lightnessStart2 = hsl[2];
+						if( hsl[1] == 0 || hsl[2] == 0 ) {
+							if( properties.led4_endColor ) {
+								var c = properties.led2_endColor.value.split(' ');
+								var hsl = rgbToHsv( c[0],c[1],c[2],1);
+								this.barOpts.hueStart2 = hsl[0]*360;
+							}
+							else {
+								this.barOpts.hueStart2 = this.barOpts.hueEnd2;
+							}
+						}
+						if( this.barOpts.saturationEnd2 == 0 || this.barOpts.lightnessEnd2 == 0  ) {
+							this.barOpts.hueEnd2 = this.barOpts.hueStart2;
+						}
+						//log.append( this.barOpts );
+					}
+					if( properties.led4_endColor ) {
+						this.prevLedEndColor2 = properties.led4_endColor;
+						var c = properties.led4_endColor.value.split(' ');
+						var hsl = rgbToHsv( c[0],c[1],c[2],1);
+						this.barOpts.hueEnd2 = hsl[0]*360;
+						this.barOpts.saturationEnd2 = hsl[1];
+						this.barOpts.lightnessEnd2 = hsl[2];
+						if( hsl[1] == 0 || hsl[2] == 0  ) {
+							this.barOpts.hueEnd2 = this.barOpts.hueStart2;
+						}
+						if( this.barOpts.saturationStart2 == 0 || this.barOpts.lightnessStart2 == 0  ) {
+							this.barOpts.hueStart2 = this.barOpts.hueEnd2;
+						}
+						//log.append( this.barOpts );
+					}
+					if( properties.led3_ledOpacity ) {
+						this.barOpts.opacityLed =  properties.led3_ledOpacity.value/100;
+					}
+					if( properties.led4_peakOpacity ) {
+						this.barOpts.opacityPeak =  properties.led4_peakOpacity.value/100;
+					}
+					if( properties.led5_dropRate ) {
+						this.barOpts.dropRate = Math.min( 1000, Math.max( 1, parseInt( properties.led5_dropRate.value ) ) );
+					}
+					if( properties.led6_orientation ) {
+						this.orientation = this.barOpts.orientation = Math.min( 6, Math.max( 1, parseInt( properties.led6_orientation.value ) ) ) - 1;
+					}
+					if( properties.led7_ledType ) {
+						this.ledType = Math.min( 5, Math.max( 1, parseInt( properties.led7_ledType.value ) ) ) - 1;
+					}
+					if( properties.led7_ledStroke ) {
+						this.useStroke = properties.led7_ledStroke.value == 1 ? true : 0;
+					}
+					if( properties.led7_ledbarCount ) {
+						this.barsWanted = Math.pow(2, 4 - ( Math.min( 4, Math.max( 1, parseInt( properties.led7_ledbarCount.value ) ) ) ) );
+					}
+					if( properties.led7_ledsizeRatio ) {
+						this.ledTypeSpacing = ( Math.min( 7, Math.max( 1, parseInt( properties.led7_ledsizeRatio.value ) ) ) - 3 ) / 4 + 1 ;
+					}
+					
+					if( properties.marginLeft ) {
+						this.marginLeft = Math.min( 1000, Math.max( 0, parseInt( properties.marginLeft.value ) ) ) ;
+					}
+					if( properties.marginRight ) {
+						this.marginRight = Math.min( 1000, Math.max( 0, parseInt( properties.marginRight.value ) ) ) ;
+					}
+					if( properties.marginTop ) {
+						this.marginTop = Math.min( 1000, Math.max( 0, parseInt( properties.marginTop.value ) ) ) ;
+					}
+					if( properties.marginBottom ) {
+						this.marginBottom = Math.min( 1000, Math.max( 0, parseInt( properties.marginBottom.value ) ) ) ;
+					}
+					if( properties.reverseAudioData ) {
+						this.reverseAudioData = properties.reverseAudioData.value ? true : false;
+					}
+					if( properties.disableNormalizing ) {
+						this.disableNormalizing = properties.disableNormalizing.value ? true : false;
+					}
+					if( properties.adjustAmplitude ) {
+						this.adjustAmplitude = Math.min( 400, Math.max( 0, parseInt( properties.adjustAmplitude.value ) ) ) / 100;
+					}
+					if( properties.smoothingFactor ) {
+						this.smoothingFactor = Math.min( 3, Math.max( 0, parseInt( properties.smoothingFactor.value ) ) );
+					}
+					if( properties.hideWhenSilent ) {
+						this.hideWhenSilent = properties.hideWhenSilent.value ? true : false;
+						if( !this.hideWhenSilent ) {
+							wp.canvas.style.display = '';	
+						}
+						else {
+							if( this.maxAverage < 0.0000000001) {
+								wp.canvas.style.display = 'none';
+							}
+							else {
+								wp.canvas.style.display = '';
+							}
+						}
+					}
+				
+					if( properties.blending ) {
+						this.canvasWrapper.style.mixBlendMode = properties.blending.value;
+					}
+					if( properties.blur ) {
+						var blur = Math.max( 0, Math.min( 10, properties.blur.value ) );
+						wp.canvas.style.filter = 'blur(' + blur + 'px)';
+					}
+					
+				
+					var updateBackground = false;
+					if( properties.led0_b0_useBackgroundImage ) {
+						this.useBackgroundImage = properties.led0_b0_useBackgroundImage.value ? true : false;
+						updateBackground = true;
+					}
+					if( properties.led0_b0_backgroundSize ) {
+						this.backgroundSize = properties.led0_b0_backgroundSize.value == 'contain' ? 'contain' : 'cover';
+						updateBackground = true; 
+					}
+					if( properties.led0_b0_backgroundImage ) {
+						this.backgroundImage = properties.led0_b0_backgroundImage.value;
+						updateBackground = true;
+					}
+					if( properties.led0_b3_backgroundColorCount ) {
+						this.backgroundColorCount = Math.min( 10, Math.max( 1, properties.led0_b3_backgroundColorCount.value ));
+						updateBackground = true;
+					}
+					if( properties.led0_b3_backgroundColorCount ) {
+						this.backgroundColorCount = Math.min( 10, Math.max( 1, properties.led0_b3_backgroundColorCount.value ));
+						updateBackground = true;
+					}
+					if( properties.led0_b0_backgroundColor ) {						
+			            var backgroundColor = properties.led0_b0_backgroundColor.value.split(' ');
+			            backgroundColor = backgroundColor.map(function(c) { return Math.ceil(c * 255); });
+			            this.backgroundColor1 = 'rgb(' + backgroundColor + ')';		
+						updateBackground = true;	            	
+					}
+					if( properties.led0_b1_backgroundColor ) {						
+			            var backgroundColor = properties.led0_b1_backgroundColor.value.split(' ');
+			            backgroundColor = backgroundColor.map(function(c) { return Math.ceil(c * 255); });
+			            this.backgroundColor2 = 'rgb(' + backgroundColor + ')';		
+						updateBackground = true;	            	
+					}
+					if( properties.led0_b2_backgroundColor ) {						
+			            var backgroundColor = properties.led0_b2_backgroundColor.value.split(' ');
+			            backgroundColor = backgroundColor.map(function(c) { return Math.ceil(c * 255); });
+			            this.backgroundColor3 = 'rgb(' + backgroundColor + ')';		
+						updateBackground = true;	            	
+					}
+					if( properties.led0_b4_backgroundHorizontal ) {						
+						this.backgroundHorizontal = properties.led0_b4_backgroundHorizontal.value ? true : false;
+						updateBackground = true;	            	
+					}
+					if( updateBackground === true ) {
+						var colors = [];
+						colors.push( this.backgroundColor1 );
+						colors.push( this.backgroundColor2 );
+						if( this.backgroundColorCount > 2 ) colors.push( this.backgroundColor3 );
+						
+						
+						var bgColor = this.backgroundColor1;
+						if( this.backgroundColorCount > 1 ) {
+							bgColor = 'linear-gradient( ' + (  this.backgroundHorizontal ? 'to right,' : '' ) + colors + ' )';
+						}
+						if( this.backgroundImage && this.useBackgroundImage ) {
+							this.bg.style.background = ' url( "file:///'  + ( this.backgroundImage ) + '" ), ' + bgColor + ' ';
+							this.bg.style.backgroundSize = this.backgroundSize;
+							this.bg.style.backgroundPosition = 'center center';
+							this.bg.style.backgroundRepeat = 'no-repeat';
+						}
+						else {
+							this.bg.style.background = bgColor ;
+							this.bg.style.backgroundRepeat = 'no-repeat';
+						}
+						
+					}
+					
+					/* color rotation */
+					if( properties.colorRotationUse ) {						
+						this.colorRotation = properties.colorRotationUse.value ? true : false;
+					}
+					if( properties.colorRotationSpeed ) {
+						this.colorRotationSpeed = Math.min( 1000, Math.max( 1, properties.colorRotationSpeed.value ))/1000;
+					}
+					if( properties.colorRotationSkip ) {
+						this.colorRotationStep = Math.min( 60, Math.max( 1, properties.colorRotationSkip.value ));
+					}
+					
+					/*
+					if( updateBackground === true ) {
+						
+						if( this.useBackgroundImage && this.backgroundImage ) {
+								document.body.style.background = 'transparent url( "file:///'  + fixFilename( this.backgroundImage ) + '" ) center center no-repeat';
+								document.body.style.backgroundSize = 'cover';
+						}
+						else {
+							if( this.backgroundColorCount === 1 ) {
+								document.body.style.background =  this.backgroundColor1;
+							}
+							else{
+								var colors = [];
+								colors.push( this.backgroundColor1 );
+								colors.push( this.backgroundColor2 );
+								if( this.backgroundColorCount > 2 ) colors.push( this.backgroundColor3 );
+								
+								document.body.style.background = 'linear-gradient( ' + (  this.backgroundHorizontal ? 'to right,' : '' ) + colors + ' )';
+								//document.body.style.background = '-webkit-linear-gradient( ' + colors + ' )';
+								document.body.style.backgroundRepeat = 'no-repeat';
+							}
+						}
+					}
+					*/
+					//for( var i = 0; i < this.bars.length; i++ ) {
+					//	this.bars[i].setOpts(this.barOpts);
+					//}
+					this.triggerResize(wp);
+					
+					var transformChanged = updateBackground && this.usePositionSystem == 1;
+					var tlChanged = false;
+					var trChanged = false;
+					var blChanged = false;
+					var brChanged = false;
+					
+					if( properties.tr_switch ) { var val = Math.min( 1, Math.max( 0, parseInt( properties.tr_switch.value ) ) ); transformChanged = this.usePositionSystem != val; this.usePositionSystem = val;}
+					
+					if( properties.tr_tl_x ) { this.topLeftX = Math.min( 1000, Math.max( 0, parseInt( properties.tr_tl_x.value ) ) )/10; transformChanged = this.usePositionSystem == 0; tlChanged = true;}
+					if( properties.tr_tl_y ) { this.topLeftY = Math.min( 1000, Math.max( 0, parseInt( properties.tr_tl_y.value ) ) )/10; transformChanged = this.usePositionSystem == 0; tlChanged = true;}
+					if( properties.tr_tr_x ) { this.topRightX = Math.min( 1000, Math.max( 0, parseInt( properties.tr_tr_x.value ) ) )/10; transformChanged = this.usePositionSystem == 0; trChanged = true;}
+					if( properties.tr_tr_y ) { this.topRightY = Math.min( 1000, Math.max( 0, parseInt( properties.tr_tr_y.value ) ) )/10; transformChanged = this.usePositionSystem == 0; trChanged = true;}
+					if( properties.tr_bl_x ) { this.bottomLeftX = Math.min( 1000, Math.max( 0, parseInt( properties.tr_bl_x.value ) ) )/10; transformChanged = this.usePositionSystem == 0; blChanged = true;}
+					if( properties.tr_bl_y ) { this.bottomLeftY = Math.min( 1000, Math.max( 0, parseInt( properties.tr_bl_y.value ) ) )/10; transformChanged = this.usePositionSystem == 0; blChanged = true;}
+					if( properties.tr_br_x ) { this.bottomRightX = Math.min( 1000, Math.max( 0, parseInt( properties.tr_br_x.value ) ) )/10; transformChanged = this.usePositionSystem == 0; brChanged = true;}
+					if( properties.tr_br_y ) { this.bottomRightY = Math.min( 1000, Math.max( 0, parseInt( properties.tr_br_y.value ) ) )/10; transformChanged = this.usePositionSystem == 0; brChanged = true;}
+					
+					if( properties.tr2_tl_x ) { this.topLeftX2 = Math.min( 5000, Math.max( -5000, parseInt( properties.tr2_tl_x.value ) ) ); transformChanged = this.usePositionSystem == 1; tlChanged = true;}
+					if( properties.tr2_tl_y ) { this.topLeftY2 = Math.min( 5000, Math.max( -5000, parseInt( properties.tr2_tl_y.value ) ) ); transformChanged = this.usePositionSystem == 1; tlChanged = true;}
+					if( properties.tr2_tr_x ) { this.topRightX2 = Math.min( 5000, Math.max( -5000, parseInt( properties.tr2_tr_x.value ) ) ); transformChanged = this.usePositionSystem == 1; trChanged = true;}
+					if( properties.tr2_tr_y ) { this.topRightY2 = Math.min( 5000, Math.max( -5000, parseInt( properties.tr2_tr_y.value ) ) ); transformChanged = this.usePositionSystem == 1; trChanged = true;}
+					if( properties.tr2_bl_x ) { this.bottomLeftX2 = Math.min( 5000, Math.max( -5000, parseInt( properties.tr2_bl_x.value ) ) ); transformChanged = this.usePositionSystem == 1; blChanged = true;}
+					if( properties.tr2_bl_y ) { this.bottomLeftY2 = Math.min( 5000, Math.max( -5000, parseInt( properties.tr2_bl_y.value ) ) ); transformChanged = this.usePositionSystem == 1; blChanged = true;}
+					if( properties.tr2_br_x ) { this.bottomRightX2 = Math.min( 5000, Math.max( -5000, parseInt( properties.tr2_br_x.value ) ) ); transformChanged = this.usePositionSystem == 1; brChanged = true;}
+					if( properties.tr2_br_y ) { this.bottomRightY2 = Math.min( 5000, Math.max( -5000, parseInt( properties.tr2_br_y.value ) ) ); transformChanged = this.usePositionSystem == 1; brChanged = true;}
+					
+					if( transformChanged ) {
+						this.setTransform();
+						this.showIndicator();
+					}
+				
+					this.gotInitialProperties = true;
+				}
+			};
+		</script>
+			
+		<script type="text/javascript">
+			window.onload =  function() {
+				var wp = new myWallpaper();
+
+				new wallpaper({
+									hideFps: true,
+									hideTimer: true,
+									hideLog: true,
+									targetFrameRate: 10,
+									canvasScaling: 1 
+								},
+								function(sender) {wp.init(sender);},
+								function(sender, timeDiff, frameCount) {wp.render(sender, timeDiff, frameCount);},
+								function(sender) {wp.resize(sender);},
+								function(sender, properties) {wp.applyGeneralProperties(sender, properties);},
+								function(sender, properties) {wp.applyUserProperties(sender, properties);},
+								function(sender, data) {wp.updateAudioData(sender, data);});
+								
+				//loadProjectJson();
+								
+			};
+		</script>
+	</body>
+</html>
