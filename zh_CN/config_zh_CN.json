@@ -1,0 +1,691 @@
+{
+	"description" : "一个响应音频的基本VU表，类似Wallpaper Engine自带的Audiophile壁纸，但相比之下本壁纸更美观、拥有更多的可自定义项！\n\n截图中的背景图片只是作为例子展示，默认以颜色作为背景，但您也可以选择一个您喜欢的图片作为背景图像。\nhttps://www.reddit.com/r/wallpapers/ 就是我多年来寻找漂亮图像壁纸的地方。\n\n默认预设值的效果并不会像上面的截图那样炫酷，但您可以在我们的\"讨论\"中找到我们提供的参数例子，然后根据参数例子进行调教即可~\n讨论地址： http://steamcommunity.com/sharedfiles/filedetails/discussions/786782443 \n\n[b]感谢Haruhi翻译成中文。[/b]\n\n[h1]英文版本 (English Version)[/h1]\nhttp://steamcommunity.com/sharedfiles/filedetails/?id=786782443 \n\n\n[h1]可自定义项:[/h1]\n- 可更换背景颜色 ( 颜色渐变 ) \n- 可使用图片作为背景\n- 可更改\"LED\"的两种颜色渐变\n- 可更改透明度/不透明度\n- 可更改颗粒的显示方向和位置\n- 可更改颗粒的大小、数量和形状\n- 可调整FPS设置 \n- 可调整边距以补偿屏幕边缘 ( 目前仍对多屏用户有一定限制 ) \n- 可切换FFT正常化数据，默认为正常化，您也可以将其关闭，但不推荐关闭\n- 可调整颗粒的跳动幅度 ( 正常化与禁用正常化之间的幅度效果不同 ) \n- 当您的电脑处于静音状态时，可开启自动隐藏颗粒 \n- 可反向音频频率，这样高点和低点将会进行逆转\n- 新增了模糊选项。模糊效果能让高点和低点看起来更平滑\n- 可更改的VU表的形状，使其能够更好的搭配您的背景图像\n\n[b]尽情发挥您的创意吧！[/b]\n\n[h1]调整位置的说明[/h1]\nhttp://steamcommunity.com/workshop/filedetails/discussion/786782443/154643785753937795/ \n\n[h1]不响应音频?[/h1]\n查看此讨论帖子，上面提到了导致音频不响应的几个原因\nhttp://steamcommunity.com/app/431960/discussions/2/154644045358419703/",
+	"file" : "index.html",
+	"general" : 
+	{
+		"properties" : 
+		{
+			"adjustAmplitude" : 
+			{
+				"max" : 400,
+				"min" : 1,
+				"order" : 104,
+				"text" : "跳动幅度 (%)",
+				"type" : "slider",
+				"value" : 100
+			},
+			"background-Label" : 
+			{
+				"order" : 1,
+				"text" : "<h3>背景</h3>",
+				"type" : "text",
+				"value" : false
+			},
+			"blending" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "正常",
+						"value" : "normal"
+					},
+					{
+						"label" : "正片叠底",
+						"value" : "multiply"
+					},
+					{
+						"label" : "滤色",
+						"value" : "screen"
+					},
+					{
+						"label" : "叠加",
+						"value" : "overlay"
+					},
+					{
+						"label" : "变暗",
+						"value" : "darken"
+					},
+					{
+						"label" : "变亮",
+						"value" : "lighten"
+					},
+					{
+						"label" : "颜色减淡",
+						"value" : "color-dodge"
+					},
+					{
+						"label" : "颜色加深",
+						"value" : "color-burn"
+					},
+					{
+						"label" : "强光",
+						"value" : "hard-light"
+					},
+					{
+						"label" : "柔光",
+						"value" : "soft-light"
+					},
+					{
+						"label" : "差值",
+						"value" : "difference"
+					},
+					{
+						"label" : "排除",
+						"value" : "exclusion"
+					},
+					{
+						"label" : "色相",
+						"value" : "hue"
+					},
+					{
+						"label" : "饱和度",
+						"value" : "saturation"
+					},
+					{
+						"label" : "颜色",
+						"value" : "color"
+					},
+					{
+						"label" : "亮度",
+						"value" : "luminosity"
+					}
+				],
+				"order" : 203,
+				"text" : "混合模式",
+				"type" : "combo",
+				"value" : "normal"
+			},
+			"blur" : 
+			{
+				"max" : 10,
+				"min" : 0,
+				"order" : 201,
+				"text" : "模糊度",
+				"type" : "slider",
+				"value" : 0
+			},
+			"blurLabel" : 
+			{
+				"order" : 200,
+				"text" : "<h3>其他设置</h3>",
+				"type" : "text",
+				"value" : false
+			},
+			"colorRotation" : 
+			{
+				"order" : 120,
+				"text" : "<h4>颜色变换</h4><small>开启颜色变换能让颗粒不间断的变换各种颜色，但这会提高CPU使用率，通过提高'颜色过渡速度'的值可适度降低CPU使用率</small>",
+				"type" : "text"
+			},
+			"colorRotationSkip" : 
+			{
+				"max" : 60,
+				"min" : 1,
+				"order" : 122,
+				"text" : "颜色过渡速度 (度)",
+				"type" : "slider",
+				"value" : 10
+			},
+			"colorRotationSpeed" : 
+			{
+				"max" : 1000,
+				"min" : 1,
+				"order" : 122,
+				"text" : "颜色变换速度 (&#x2030;)",
+				"type" : "slider",
+				"value" : 100
+			},
+			"colorRotationUse" : 
+			{
+				"order" : 121,
+				"text" : "开启颜色变换",
+				"type" : "bool",
+				"value" : false
+			},
+			"disableNormalizing" : 
+			{
+				"order" : 102,
+				"text" : "禁用正常化<br><small>(降低CPU使用率)</small>",
+				"type" : "bool",
+				"value" : false
+			},
+			"hideWhenSilent" : 
+			{
+				"order" : 108,
+				"text" : "静音时隐藏颗粒",
+				"type" : "bool",
+				"value" : false
+			},
+			"led0_b0_backgroundColor" : 
+			{
+				"order" : 5,
+				"text" : "背景颜色 1",
+				"type" : "color",
+				"value" : "0 0 0.125"
+			},
+			"led0_b0_backgroundImage" : 
+			{
+				"order" : 3,
+				"text" : "背景图片",
+				"type" : "file"
+			},
+			"led0_b0_backgroundSize" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "填充",
+						"value" : "cover"
+					},
+					{
+						"label" : "适应",
+						"value" : "contain"
+					}
+				],
+				"order" : 4,
+				"text" : "图片契合度",
+				"type" : "combo",
+				"value" : "cover"
+			},
+			"led0_b0_useBackgroundImage" : 
+			{
+				"order" : 2,
+				"text" : "使用图片作为背景",
+				"type" : "bool",
+				"value" : true
+			},
+			"led0_b1_backgroundColor" : 
+			{
+				"order" : 6,
+				"text" : "背景颜色 2",
+				"type" : "color",
+				"value" : "0.125 0 0.125"
+			},
+			"led0_b2_backgroundColor" : 
+			{
+				"order" : 7,
+				"text" : "背景颜色 3",
+				"type" : "color",
+				"value" : "0 0 0.125"
+			},
+			"led0_b3_backgroundColorCount" : 
+			{
+				"max" : 3,
+				"min" : 1,
+				"order" : 8,
+				"text" : "使用多少种背景颜色",
+				"type" : "slider",
+				"value" : 3
+			},
+			"led0_b4_backgroundHorizontal" : 
+			{
+				"order" : 9,
+				"text" : "背景颜色横向渐变",
+				"type" : "bool",
+				"value" : true
+			},
+			"led1_startColor" : 
+			{
+				"order" : 14,
+				"text" : "渐变开始颜色 1",
+				"type" : "color",
+				"value" : "0 0.4 1"
+			},
+			"led1_startColor-Label" : 
+			{
+				"order" : 12,
+				"text" : "<h3>LED显示设置</h3>",
+				"type" : "text",
+				"value" : false
+			},
+			"led2_endColor" : 
+			{
+				"order" : 15,
+				"text" : "渐变结束颜色 1",
+				"type" : "color",
+				"value" : "1 0 0"
+			},
+			"led3_ledOpacity" : 
+			{
+				"max" : 100,
+				"min" : 0,
+				"order" : 19,
+				"text" : "不透明度",
+				"type" : "slider",
+				"value" : 40
+			},
+			"led3_startColor" : 
+			{
+				"order" : 17,
+				"text" : "渐变开始颜色 2",
+				"type" : "color",
+				"value" : "1 0 0"
+			},
+			"led4_endColor" : 
+			{
+				"order" : 18,
+				"text" : "渐变结束颜色 2",
+				"type" : "color",
+				"value" : "0 1 0.5"
+			},
+			"led4_peakOpacity" : 
+			{
+				"max" : 100,
+				"min" : 0,
+				"order" : 20,
+				"text" : "顶点颗粒不透明度",
+				"type" : "slider",
+				"value" : 100
+			},
+			"led5_dropRate" : 
+			{
+				"max" : 500,
+				"min" : 10,
+				"order" : 30,
+				"text" : "顶点颗粒下落速度",
+				"type" : "slider",
+				"value" : 20
+			},
+			"led6_orientation" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "底部",
+						"value" : 1
+					},
+					{
+						"label" : "顶部",
+						"value" : 2
+					},
+					{
+						"label" : "左/右",
+						"value" : 3
+					},
+					{
+						"label" : "上/下",
+						"value" : 6
+					},
+					{
+						"label" : "垂直居中",
+						"value" : 4
+					},
+					{
+						"label" : "横向居中",
+						"value" : 5
+					}
+				],
+				"order" : 31,
+				"text" : "方向",
+				"type" : "combo",
+				"value" : 5
+			},
+			"led7_ledStroke" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "实心",
+						"value" : 0
+					},
+					{
+						"label" : "轮廓",
+						"value" : 1
+					}
+				],
+				"order" : 35,
+				"text" : "着色风格",
+				"type" : "combo",
+				"value" : 0
+			},
+			"led7_ledType" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "方形",
+						"value" : 1
+					},
+					{
+						"label" : "椭圆",
+						"value" : 2
+					},
+					{
+						"label" : "六角",
+						"value" : 3
+					},
+					{
+						"label" : "梯形",
+						"value" : 4
+					},
+					{
+						"label" : "反向梯形",
+						"value" : 5
+					}
+				],
+				"order" : 34,
+				"text" : "颗粒形状 <br><small>( 除了方形，所有其他形状都会增加CPU使用率 )</small>",
+				"type" : "combo",
+				"value" : 1
+			},
+			"led7_ledbarCount" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "8",
+						"value" : 1
+					},
+					{
+						"label" : "16",
+						"value" : 2
+					},
+					{
+						"label" : "32",
+						"value" : 3
+					},
+					{
+						"label" : "64",
+						"value" : 4
+					}
+				],
+				"order" : 32,
+				"text" : "颗粒数量<br><small>每个音频通道的数量</small>",
+				"type" : "combo",
+				"value" : 4
+			},
+			"led7_ledsizeRatio" : 
+			{
+				"max" : 7,
+				"min" : 1,
+				"order" : 33,
+				"text" : "颗粒大小",
+				"type" : "slider",
+				"value" : 4
+			},
+			"led_use4Colors" : 
+			{
+				"order" : 13,
+				"text" : "4色渐变<br><small>不勾选将只显示下方前两种颜色<br>勾选则显示所有四种颜色</small>",
+				"type" : "bool",
+				"value" : true
+			},
+			"marginBottom" : 
+			{
+				"max" : 200,
+				"min" : 0,
+				"order" : 604,
+				"text" : "底部边距",
+				"type" : "slider",
+				"value" : 0
+			},
+			"marginLeft" : 
+			{
+				"max" : 200,
+				"min" : 0,
+				"order" : 601,
+				"text" : "左侧边距",
+				"type" : "slider",
+				"value" : 0
+			},
+			"marginRight" : 
+			{
+				"max" : 200,
+				"min" : 0,
+				"order" : 602,
+				"text" : "右侧边距",
+				"type" : "slider",
+				"value" : 0
+			},
+			"marginTop" : 
+			{
+				"max" : 200,
+				"min" : 0,
+				"order" : 603,
+				"text" : "顶部边距",
+				"type" : "slider",
+				"value" : 0
+			},
+			"margins" : 
+			{
+				"order" : 600,
+				"text" : "<h3>边距</h3><small>通过调整边距能让颗粒不被桌面上的任务栏或图标挡住, 如果您是想调整位置, 请前往下方的'调整位置'</small>",
+				"type" : "text",
+				"value" : false
+			},
+			"reverseAudioData" : 
+			{
+				"order" : 100,
+				"text" : "反向频率",
+				"type" : "bool",
+				"value" : false
+			},
+			"schemecolor" : 
+			{
+				"order" : -1,
+				"text" : "状态栏配色",
+				"type" : "color",
+				"value" : "0.1450980392156863 0.2 0.5019607843137255"
+			},
+			"smoothingFactor" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "关",
+						"value" : 0
+					},
+					{
+						"label" : "低",
+						"value" : 1
+					},
+					{
+						"label" : "中",
+						"value" : 2
+					},
+					{
+						"label" : "高",
+						"value" : 3
+					}
+				],
+				"order" : 106,
+				"text" : "抗锯齿",
+				"type" : "combo",
+				"value" : 0
+			},
+			"tr2_bl_x" : 
+			{
+				"max" : 3000,
+				"min" : -3000,
+				"order" : 855,
+				"text" : "左下 X (px)",
+				"type" : "slider",
+				"value" : -100
+			},
+			"tr2_bl_y" : 
+			{
+				"max" : 3000,
+				"min" : -3000,
+				"order" : 856,
+				"text" : "左下 Y (px)",
+				"type" : "slider",
+				"value" : 100
+			},
+			"tr2_br_x" : 
+			{
+				"max" : 3000,
+				"min" : -3000,
+				"order" : 857,
+				"text" : "右下 X (px)",
+				"type" : "slider",
+				"value" : 100
+			},
+			"tr2_br_y" : 
+			{
+				"max" : 3000,
+				"min" : -3000,
+				"order" : 858,
+				"text" : "右下 Y  (px)",
+				"type" : "slider",
+				"value" : 100
+			},
+			"tr2_tl_x" : 
+			{
+				"max" : 3000,
+				"min" : -3000,
+				"order" : 851,
+				"text" : "左上 X (px)",
+				"type" : "slider",
+				"value" : -100
+			},
+			"tr2_tl_y" : 
+			{
+				"max" : 3000,
+				"min" : -3000,
+				"order" : 852,
+				"text" : "左上 Y (px)",
+				"type" : "slider",
+				"value" : -100
+			},
+			"tr2_tr_x" : 
+			{
+				"max" : 5000,
+				"min" : -5000,
+				"order" : 853,
+				"text" : "右上 X (px)",
+				"type" : "slider",
+				"value" : 100
+			},
+			"tr2_tr_y" : 
+			{
+				"max" : 3000,
+				"min" : -3000,
+				"order" : 854,
+				"text" : "右上 Y (px)",
+				"type" : "slider",
+				"value" : -100
+			},
+			"tr_bl_x" : 
+			{
+				"max" : 1000,
+				"min" : 0,
+				"order" : 825,
+				"text" : "左下 X (&#x2030;)",
+				"type" : "slider",
+				"value" : 0
+			},
+			"tr_bl_y" : 
+			{
+				"max" : 1000,
+				"min" : 0,
+				"order" : 826,
+				"text" : "左下 Y (&#x2030;)",
+				"type" : "slider",
+				"value" : 0
+			},
+			"tr_br_x" : 
+			{
+				"max" : 1000,
+				"min" : 0,
+				"order" : 827,
+				"text" : "右下 X (&#x2030;)",
+				"type" : "slider",
+				"value" : 0
+			},
+			"tr_br_y" : 
+			{
+				"max" : 1000,
+				"min" : 0,
+				"order" : 828,
+				"text" : "右下 Y  (&#x2030;)",
+				"type" : "slider",
+				"value" : 0
+			},
+			"tr_switch" : 
+			{
+				"options" : 
+				[
+					{
+						"label" : "边偏移",
+						"value" : 0
+					},
+					{
+						"label" : "屏幕中心",
+						"value" : 1
+					}
+				],
+				"order" : 801,
+				"text" : "定位系统",
+				"type" : "combo",
+				"value" : 0
+			},
+			"tr_tl_0" : 
+			{
+				"order" : 800,
+				"text" : "<h3>调整位置</h3><small>在调整位置之前, 您需要先选择一个'定位系统', 再调整您指定的'定位系统'处的值</small>",
+				"type" : "text"
+			},
+			"tr_tl_01" : 
+			{
+				"order" : 802,
+				"text" : "<small>偏移值: 可以简单直观的调整波形频谱的位置<br>屏幕中心: 可以更精确且可以更好的复制参数到其他具有不同屏幕大小的电脑上</small>",
+				"type" : "text"
+			},
+			"tr_tl_1" : 
+			{
+				"order" : 820,
+				"text" : "<h4>边偏移</h4><small>此处设置仅应用于'偏移值', 使用这些设置之前, 先将'定位系统'选择为'边偏移'。此处位置的值是基于您的屏幕宽度和高度的角点</b><br>您现在可以使用键盘上的箭头方向键调整各个值</small>",
+				"type" : "text"
+			},
+			"tr_tl_2" : 
+			{
+				"order" : 840,
+				"text" : "<h4>屏幕中心</h4><small>此处设置仅应用于'屏幕中心', 使用这些设置之前, 先将'定位系统'选择为'屏幕中心'。默认值为0时, 波形频谱在屏幕正中心, 这会看起来不是很美观, 但'屏幕中心'的参数值更加精确, 适合复制他人的参数或复制参数给他人<br><br> 如果背景是图片, 那么此值会缩放以匹配背景图片的像素坐标<br><br><b>您现在可以使用键盘上的箭头方向键调整各个值</b></small>",
+				"type" : "text"
+			},
+			"tr_tl_x" : 
+			{
+				"max" : 1000,
+				"min" : 0,
+				"order" : 821,
+				"text" : "左上 X (&#x2030;)",
+				"type" : "slider",
+				"value" : 0
+			},
+			"tr_tl_y" : 
+			{
+				"max" : 1000,
+				"min" : 0,
+				"order" : 822,
+				"text" : "左上 Y (&#x2030;)",
+				"type" : "slider",
+				"value" : 0
+			},
+			"tr_tr_x" : 
+			{
+				"max" : 1000,
+				"min" : 0,
+				"order" : 823,
+				"text" : "右上 X (&#x2030;)",
+				"type" : "slider",
+				"value" : 0
+			},
+			"tr_tr_y" : 
+			{
+				"max" : 1000,
+				"min" : 0,
+				"order" : 824,
+				"text" : "右上 Y (&#x2030;)",
+				"type" : "slider",
+				"value" : 0
+			}
+		},
+		"supportsaudioprocessing" : true
+	},
+	"preview" : "preview.jpg",
+	"tags" : [ "Abstract" ],
+	"title" : "VU Meter (简体中文)",
+	"type" : "web",
+	"visibility" : "public",
+	"workshopid" : 837056186
+}
