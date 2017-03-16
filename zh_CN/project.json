@@ -154,15 +154,15 @@
 				"options" : 
 				[
 					{
-						"label" : "Do Nothing",
+						"label" : "不隐藏",
 						"value" : false
 					},
 					{
-						"label" : "Hide All",
+						"label" : "全部隐藏",
 						"value" : true
 					},
 					{
-						"label" : "Animate",
+						"label" : "隐藏动画",
 						"value" : 1
 					}
 				],
